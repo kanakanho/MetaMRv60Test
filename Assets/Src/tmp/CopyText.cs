@@ -3,8 +3,8 @@ using UnityEngine;
 public class CopyText : MonoBehaviour
 {
     // コピーするテキストを保持する変数
-    private string email = "aitkjlb123@email.com";
-    private string password = "thisyourpass1234";
+    private string email = "";
+    private string password = "";
 
     // メールアドレスをクリップボードにコピーするメソッド
     public void CopyEmail()
