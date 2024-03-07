@@ -4,26 +4,13 @@ using TMPro;
 
 public class ValidateLogin : MonoBehaviour
 {
-    [SerializeField] TMP_Text errorMessage;
+    [SerializeField] TMP_Text errorMessageEmail;
+    [SerializeField] TMP_Text errorMessagePassword;
 
     private const string errorInvalidInput = "無効な入力です";
+    private const string errorNotMatchEmail = "メールアドレスが無効です";
     private const string errorShortPassword = "パスワードは8文字以上にしてください";
-
-    // メールアドレスのバリデーション
-    private bool ValidateEmail(string email)
-    {
-        string pattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-        Regex regex = new Regex(pattern);
-        if (regex.IsMatch(email) && !ContainsInvalidChars(email) && !IsIpAddress(email))
-        {
-            return true;
-        }
-        else
-        {
-            errorMessage.text = errorInvalidInput;
-            return false;
-        }
-    }
+    private const string errorYouNotUseJapanese = "パスワードには日本語を含めることはできません";
 
     // 不適切な文字を含むかどうかをチェック
     private bool ContainsInvalidChars(string email)
@@ -47,45 +34,96 @@ public class ValidateLogin : MonoBehaviour
         return regex.IsMatch(email);
     }
 
-    // パスワードのバリデーション
-    private bool ValidatePassword(string password)
+    // 特定の文字列を禁止
+    private bool ContainsSpecialMeaning(string email)
     {
-        string pattern = @"^[^\x20-\x7E]*$";
-        Regex regex = new Regex(pattern);
-        if (password.Length < 8)
+        string[] specialStrings = { "admin", "root", "superuser", "administrator", "system", "guest", "test", "password", "123456", "qwerty", "admin123", "root123" }; // 特殊な意味を持つ文字列のリスト
+        foreach (var specialString in specialStrings)
         {
-            errorMessage.text = errorShortPassword;
+            if (email.ToLower().Contains(specialString))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 日本語を含むかどうかをチェック
+    private bool ContainsJapanese(string password)
+    {
+        // 日本語を含むかどうかの正規表現パターン
+        string pattern = @"[\p{IsHiragana}\p{IsKatakana}\p{IsCJKUnifiedIdeographs}]";
+        Regex regex = new Regex(pattern);
+        return regex.IsMatch(password);
+    }
+
+    // メールアドレスのバリデーション
+    public bool ValidateEmail(string email)
+    {
+        string pattern = @"^([a-zA-Z0-9._%+-]+@)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+        Regex regex = new Regex(pattern);
+        // メールアドレスの形式チェック
+        if (!regex.IsMatch(email))
+        {
+            ValidateErrorEmail(errorNotMatchEmail);
             return false;
         }
-        else if (!regex.IsMatch(password) || ContainsInvalidChars(password) || IsIpAddress(password))
+        if (ContainsInvalidChars(email))
         {
-            errorMessage.text = errorInvalidInput;
+            ValidateErrorEmail(errorInvalidInput);
+            return false;
+        }
+        if (ContainsSpecialMeaning(email))
+        {
+            ValidateErrorEmail(errorInvalidInput);
+            return false;
+        }
+        if (IsIpAddress(email))
+        {
+            ValidateErrorEmail(errorInvalidInput);
             return false;
         }
         return true;
     }
 
-    // バリデーションを実行する関数
-    public bool Validate(string whichInput, string inputText)
+    // パスワードのバリデーション
+    public bool ValidatePassword(string password)
     {
-        switch (whichInput)
+        if (password.Length < 8)
         {
-            case "Email":
-                if (!ValidateEmail(inputText))
-                {
-                    return false;
-                }
-                break;
-            case "Pass":
-                if (!ValidatePassword(inputText))
-                {
-                    return false;
-                }
-                break;
-            default:
-                errorMessage.text = errorInvalidInput;
-                return false;
+            ValidateErrorPassword(errorShortPassword);
+            return false;
+        }
+        if (ContainsJapanese(password))
+        {
+            ValidateErrorEmail(errorYouNotUseJapanese);
+            return false;
+        }
+        if (ContainsInvalidChars(password))
+        {
+            ValidateErrorEmail(errorInvalidInput);
+            return false;
+        }
+        if (ContainsSpecialMeaning(password))
+        {
+            ValidateErrorEmail(errorInvalidInput);
+            return false;
+        }
+        if (IsIpAddress(password))
+        {
+            ValidateErrorEmail(errorInvalidInput);
+            return false;
         }
         return true;
+    }
+
+    public void ValidateErrorEmail(string errorText)
+    {
+        errorMessageEmail.text = errorText;
+    }
+
+    public void ValidateErrorPassword(string errorText)
+    {
+        errorMessagePassword.text = errorText;
     }
 }
