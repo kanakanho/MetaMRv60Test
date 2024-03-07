@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -6,21 +8,23 @@ public class UseKeyboard : MonoBehaviour
     // 外部からInputFieldの呼び出し
     [SerializeField] private TMP_InputField inputEmailField;
 
+    [SerializeField] private string OutputEmail;
+
     // 外部からInputFieldの呼び出し
-    [SerializeField] private TMP_InputField inputPasswordField;
+    [SerializeField] private TMP_InputField inputPassField;
 
-    public LoginState m_LoginState;
-    public ValidateLogin m_ValidateLogin;
+    [SerializeField] private string OutputPass;
 
-    public bool isPassword = false;
+    public bool isPass = false;
     public bool isEmail = false;
 
     // キーボードの宣言
     private TouchScreenKeyboard _overlayKeyboard;
 
+    [SerializeField] ValidateLogin m_ValidateLogin;
+
     private void Start()
     {
-        m_LoginState = FindObjectOfType<LoginState>();
         m_ValidateLogin = FindObjectOfType<ValidateLogin>();
     }
 
@@ -33,42 +37,53 @@ public class UseKeyboard : MonoBehaviour
         if (isEmail)
         {
             inputEmailField.text = _overlayKeyboard.text;
-            m_LoginState.email = inputEmailField.text;
-            m_ValidateLogin.ValidateErrorEmail(string.Empty);
+            OutputEmail = inputEmailField.text;
         }
 
         // pass
-        if (isPassword)
+        if (isPass)
         {
-            inputPasswordField.text = _overlayKeyboard.text;
-            m_LoginState.password = inputPasswordField.text;
-            m_ValidateLogin.ValidateErrorPassword(string.Empty);
+            inputPassField.text = _overlayKeyboard.text;
+            OutputPass = inputPassField.text;
+           
         }
+
     }
 
     // Email用のキーボードを呼び出す関数
     public void SetEmailKeyboard()
     {
-        _overlayKeyboard = TouchScreenKeyboard.Open(m_LoginState.email, TouchScreenKeyboardType.URL);
-        isPassword = false;
+        _overlayKeyboard = TouchScreenKeyboard.Open(OutputEmail, TouchScreenKeyboardType.URL);
+        isPass = false;
         isEmail = true;
     }
 
     // Pass用のキーボードを呼び出す関数
     public void SetPassKeyboard()
     {
-        _overlayKeyboard = TouchScreenKeyboard.Open(m_LoginState.password, TouchScreenKeyboardType.URL);
-        isPassword = true;
+        _overlayKeyboard = TouchScreenKeyboard.Open(OutputPass, TouchScreenKeyboardType.URL);
+        isPass = true;
         isEmail = false;
     }
 
-    public void CleanEmail()
+    public void CleanInoutText(string whichInput)
     {
-        inputEmailField.text = "";
-    }
-
-    public void CleanPassword()
-    {
-        inputPasswordField.text = " ";
+        switch (whichInput)
+        {
+            case ("Email"):
+                {
+                    inputEmailField.text = "";
+                    break;
+                }
+            case ("Pass"):
+                {
+                    inputPassField.text = "";
+                    break;
+                }
+            default:
+                inputEmailField.text = "";
+                inputPassField.text = "";
+                break;
+        }
     }
 }
